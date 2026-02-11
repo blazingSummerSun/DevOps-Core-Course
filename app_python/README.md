@@ -120,3 +120,28 @@ DEBUG=true PORT=8080 python3 app.py
 * This project follows Python best practices and PEP 8 style guidelines.
 * Dependencies are pinned for reproducibility.
 * The `/health` endpoint is suitable for Kubernetes liveness and readiness probes.
+
+## Docker
+
+The application can also be run as a Docker container.
+
+### Build the image locally
+
+```bash
+docker build -t <image-name> .
+```
+
+### Run the container
+
+```bash
+docker run -p <host-port>:5000 <image-name>
+```
+
+### Pull from Docker Hub
+
+```bash
+docker pull <dockerhub-username>/<image-name>:<tag>
+docker run -p <host-port>:5000 <dockerhub-username>/<image-name>:<tag>
+```
+
+These commands demonstrate the general usage pattern. Replace placeholders with your actual image name, Docker Hub username, port, and tag as needed.
