@@ -176,18 +176,35 @@ docker build -t sincere99/devops-info-service:1.0 .
 
 ### Tagging Strategy
 
-Images can be tagged with:
-- :latest
-- :1.0
-- :v1.2.3
-- :dev
-- :prod
+I chose Semantic Versioning (SemVer) for the application because it provides a service with explicit API versions and potential incompatible changes. SemVer allows for precise tracking of breaking changes (majors), new features (minors), and bug fixes (patches), making the release process predictable and transparent for users and CI/CD.
 
 Using explicit version tags is recommended for traceability and rollback.
+### Link to successful run in Github Actions:
+https://github.com/blazingSummerSun/DevOps-Core-Course/actions/runs/21957935482/job/63427173836
 
 ### Green checkmark:
 ![img_7.png](screenshots/img_7.png)
 ![img_8.png](screenshots/img_8.png)
+
+### Link to the Docker Hub Image
+https://hub.docker.com/repository/docker/sincere99/devops-info-service/general
+
+### Workflow triggers
+Workflow triggers according to these schema:
+```
+on:
+  push:
+    branches:
+      - main
+      - lab03
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - main
+```
+
+I added branch lab03 for testing purposes.
 
 # Task 3
 ## Status Badge

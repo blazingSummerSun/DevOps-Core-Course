@@ -147,3 +147,4 @@ docker run -p <host-port>:5000 <dockerhub-username>/<image-name>:<tag>
 ```
 
 These commands demonstrate the general usage pattern. Replace placeholders with your actual image name, Docker Hub username, port, and tag as needed.
+
