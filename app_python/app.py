@@ -50,6 +50,7 @@ def get_uptime():
 def log_request():
     logger.info(f"Request: {request.method} {request.path}")
 
+
 # Routes
 
 
@@ -86,8 +87,10 @@ def index():
             "path": request.path
         },
         "endpoints": [
-            {"path": "/", "method": "GET", "description": "Service information"},
-            {"path": "/health", "method": "GET", "description": "Health check"}
+            {"path": "/", "method": "GET",
+             "description": "Service information"},
+            {"path": "/health", "method": "GET",
+             "description": "Health check"}
         ]
     }
 

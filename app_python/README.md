@@ -1,5 +1,7 @@
 # DevOps Info Service
 
+[![Python CI + Docker Build](https://github.com/blazingSummerSun/DevOps-Core-Course/actions/workflows/python-ci.yml/badge.svg)](https://github.com/blazingSummerSun/DevOps-Core-Course/actions/workflows/python-ci.yml)
+
 ## Overview
 
 DevOps Info Service is a lightweight HTTP service that exposes runtime, system, and application information. The service is suitable for containerization, health monitoring, and deployment in orchestration platforms such as Kubernetes.
@@ -145,3 +147,4 @@ docker run -p <host-port>:5000 <dockerhub-username>/<image-name>:<tag>
 ```
 
 These commands demonstrate the general usage pattern. Replace placeholders with your actual image name, Docker Hub username, port, and tag as needed.
+
