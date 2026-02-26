@@ -1,0 +1,8 @@
+---
+- name: Debug vault variables
+  hosts: webservers
+  gather_facts: no
+  tasks:
+    - name: Show dockerhub username
+      debug:
+        var: dockerhub_username
