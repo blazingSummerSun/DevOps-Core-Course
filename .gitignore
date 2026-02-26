@@ -1,2 +1,15 @@
 test
 .idea
+terraform/key.json
+terraform/terraform.tfvars
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfvars
+*.tfvars
+.terraform.lock.hcl
+
+*.pem
+*.key
+*.json
+credentials
