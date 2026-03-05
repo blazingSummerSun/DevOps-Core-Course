@@ -1,8 +1,8 @@
 ---
 - name: Debug vault variables
   hosts: webservers
-  gather_facts: no
+  gather_facts: false
   tasks:
     - name: Show dockerhub username
-      debug:
+      ansible.builtin.debug:
         var: dockerhub_username

@@ -2,4 +2,5 @@
 - name: Restart application container
   community.docker.docker_container:
     name: "{{ app_container_name }}"
-    state: restarted
+    state: started
+    recreate: true

@@ -1,0 +1,25 @@
+# Docker Compose template for deploying the web application
+# Variables used:
+#
+# app_name            - Name of the container
+# docker_image        - Docker Hub image repository
+# docker_tag          - Image version tag
+# app_port            - External port exposed on the VM
+# app_internal_port   - Internal port used by the container
+# web_app_debug       - Enables Flask debug mode
+# app_secret_key      - Secret key for Flask sessions
+
+version: '{{ docker_compose_version }}'
+
+services:
+  {{ app_name }}:
+    image: {{ docker_image }}:{{ docker_tag }}
+    container_name: {{ app_name }}
+    ports:
+      - "{{ app_port }}:{{ app_internal_port }}"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "{{ app_internal_port }}"
+      DEBUG: "False"
+      APP_SECRET_KEY: "{{ app_secret_key }}"
+    restart: unless-stopped
