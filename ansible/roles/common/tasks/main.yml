@@ -1,14 +1,55 @@
 ---
-- name: Update apt cache
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
+# Role: common
+# Purpose:
+# Installs base system packages required for all roles.
+# Uses a block with rescue to handle possible apt cache corruption.
 
-- name: Install common packages
-  apt:
-    name: "{{ common_packages }}"
-    state: present
+- name: Package management
+  become: true
+  tags:
+    - packages
+  block:
+    # Update apt cache to ensure latest package metadata
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+    # Install basic packages required by the system
+    - name: Install base packages
+      ansible.builtin.apt:
+        name:
+          - curl
+          - git
+          - ca-certificates
+          - apt-transport-https
+        state: present
+  # If apt cache is corrupted, try to repair it
+  rescue:
+    - name: Fix apt cache and retry
+      ansible.builtin.apt:
+        update_cache: true
+        force_apt_get: true
+      become: true
+  # Write a log file to indicate this block finished execution
+  always:
+    - name: Log package block completion
+      ansible.builtin.copy:
+        dest: /tmp/ansible_packages_done.log
+        content: "Package block completed\n"
+        mode: '0644'
 
-- name: Set timezone
-  timezone:
-    name: "{{ timezone }}"
+- name: User management
+  become: true
+  tags:
+    - users
+  block:
+    - name: Ensure devops user exists
+      ansible.builtin.user:
+        name: devops
+        shell: /bin/bash
+        state: present
+    - name: Add devops user to sudo group
+      ansible.builtin.user:
+        name: devops
+        groups: sudo
+        append: true

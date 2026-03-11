@@ -1,0 +1,11 @@
+---
+web_app_app_port: 5000
+web_app_restart_policy: unless-stopped
+web_app_app_env: {}
+
+# Wipe Logic Control
+web_app_wipe: false  # Default: do not wipe
+
+# Usage:
+# 1) Wipe only:   ansible-playbook deploy.yml -e "web_app_wipe=true" --tags web_app_wipe
+# 2) Clean install: ansible-playbook deploy.yml -e "web_app_wipe=true"
