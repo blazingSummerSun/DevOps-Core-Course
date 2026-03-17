@@ -3,13 +3,19 @@ DevOps Info Service
 Main application module
 """
 
-import os
 import json
-import socket
-import platform
 import logging
+import os
+import platform
+import socket
 from datetime import datetime, timezone
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response, g
+
+import time
+from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
+
+
+from prometheus_client import Counter, Histogram, Gauge
 
 app = Flask(__name__)
 
@@ -22,6 +28,28 @@ SERVICE_NAME = "devops-info-service"
 SERVICE_VERSION = "1.0.0"
 SERVICE_DESCRIPTION = "DevOps course info service"
 FRAMEWORK = "Flask"
+
+http_requests_total = Counter(
+    "http_requests_total",
+    "Total HTTP requests",
+    ["method", "endpoint", "status"],
+)
+
+http_request_duration_seconds = Histogram(
+    "http_request_duration_seconds",
+    "HTTP request duration in seconds",
+    ["method", "endpoint"],
+)
+
+http_requests_in_progress = Gauge(
+    "http_requests_in_progress",
+    "HTTP requests currently being processed",
+)
+
+def normalize_endpoint():
+    if request.url_rule and hasattr(request.url_rule, "rule"):
+        return request.url_rule.rule
+    return request.path
 
 
 # JSON Structured Logging
@@ -37,7 +65,7 @@ class JSONFormatter(logging.Formatter):
         }
         # Add extra-fields if they provided
         for field in ("method", "path", "status_code", "client_ip",
-                       "user_agent", "service"):
+                      "user_agent", "service"):
             if hasattr(record, field):
                 log_entry[field] = getattr(record, field)
 
@@ -77,6 +105,9 @@ def get_uptime():
 
 @app.before_request
 def log_request():
+    http_requests_in_progress.inc()
+    request._start_time = time.perf_counter()
+
     logger.info(
         f"Incoming request: {request.method} {request.path}",
         extra={
@@ -90,6 +121,22 @@ def log_request():
 
 @app.after_request
 def log_response(response):
+    # metrics: decrement in-progress
+    http_requests_in_progress.dec()
+
+    endpoint = normalize_endpoint()
+    method = request.method
+    status = str(response.status_code)
+
+    # counter
+    http_requests_total.labels(method=method, endpoint=endpoint, status=status).inc()
+
+    # histogram
+    start = getattr(request, "_start_time", None)
+    if start is not None:
+        duration = time.perf_counter() - start
+        http_request_duration_seconds.labels(method=method, endpoint=endpoint).observe(duration)
+
     logger.info(
         f"Response: {request.method} {request.path} -> {response.status_code}",
         extra={
@@ -108,6 +155,9 @@ def log_response(response):
 @app.route("/", methods=["GET"])
 def index():
     """Main endpoint - service and system information."""
+    devops_info_endpoint_calls.labels(endpoint="/").inc()
+
+    t0 = time.perf_counter()
     uptime = get_uptime()
 
     response = {
@@ -143,11 +193,13 @@ def index():
         ],
     }
 
+    devops_info_system_collection_seconds.observe(time.perf_counter() - t0)
     return jsonify(response)
 
 
 @app.route("/health", methods=["GET"])
 def health():
+    devops_info_endpoint_calls.labels(endpoint="/health").inc()
     return jsonify(
         {
             "status": "healthy",
@@ -192,9 +244,26 @@ def internal_error(error):
         500,
     )
 
+
 @app.get("/error")
 def error():
     raise Exception("Test error for logging")
+
+@app.get("/metrics")
+def metrics():
+    data = generate_latest()
+    return Response(data, mimetype=CONTENT_TYPE_LATEST)
+
+devops_info_endpoint_calls = Counter(
+    "devops_info_endpoint_calls",
+    "DevOps Info Service endpoint calls",
+    ["endpoint"],
+)
+
+devops_info_system_collection_seconds = Histogram(
+    "devops_info_system_collection_seconds",
+    "Time spent collecting system info for response",
+)
 
 if __name__ == "__main__":
     app.run(host=HOST, port=PORT, debug=DEBUG)
