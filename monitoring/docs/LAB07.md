@@ -357,9 +357,9 @@ sum by (level) (count_over_time({app="devops-python"} | json [5m]))
 
 ## Screenshot showing logs from at least 3 containers in Grafana Explore.
 
-![img.png](img.png)
-![img_1.png](img_1.png)
-![img_2.png](img_2.png)
+![img.png](screenshots_lab07/img.png)
+![img_1.png](screenshots_lab07/img_1.png)
+![img_2.png](screenshots_lab07/img_2.png)
 
 ## Sample of logs
 ```
@@ -390,23 +390,23 @@ dreamcore@californiawrld:~/PycharmProjects/DevOps-Core-Course/monitoring$ docker
 
 ## Logs from Grafana
 Since I haven't done extra task in lab 1, I only have logs from 1 application:
-![img_3.png](img_3.png)
+![img_3.png](screenshots_lab07/img_3.png)
 
 ## 3 different queries
 ### {job = "app-python"} |= "INFO" | json
-![img_4.png](img_4.png)
+![img_4.png](screenshots_lab07/img_4.png)
 
 ### {job = "app-python"} |= "WARN" | json
-![img_5.png](img_5.png)
+![img_5.png](screenshots_lab07/img_5.png)
 
 ### {job = "app-python"} |= "GET" | json
-![img_6.png](img_6.png)
+![img_6.png](screenshots_lab07/img_6.png)
 
 ## Dashboards
-![img_7.png](img_7.png)
+![img_7.png](screenshots_lab07/img_7.png)
 
 ## docker-compose ps showing all services healthy
-![img_8.png](img_8.png)
+![img_8.png](screenshots_lab07/img_8.png)
 
 ## Screenshot of Grafana login page (no anonymous access)
-![img_9.png](img_9.png)
+![img_9.png](screenshots_lab07/img_9.png)
