@@ -20,7 +20,14 @@ spec:
       labels:
         {{- include "devops-info-service.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/part-of: devops-core-course
+      {{- if .Values.vault.enabled }}
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: { { .Values.vault.role | quote } }
+        vault.hashicorp.com/agent-inject-secret-{{ .Values.vault.fileName }}: { { .Values.vault.secretPath | quote } }
+      {{- end }}
     spec:
+      serviceAccountName: devops-info-sa
       containers:
         - name: {{ include "devops-info-service.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -31,6 +38,11 @@ spec:
               containerPort: {{ .Values.containerPort }}
               protocol: TCP
 
+          {{- if .Values.secret.enabled }}
+          envFrom:
+            - secretRef:
+                name: {{ if .Values.secret.nameOverride }}{{ .Values.secret.nameOverride }}{{ else }}{{ printf "%s-secret" (include "devops-info-service.fullname" .) }}{{ end }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
 

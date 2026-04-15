@@ -12,6 +12,20 @@ service:
 
 containerPort: 5000
 
+secret:
+  enabled: true
+  nameOverride: ""
+  data:
+    username: "change-me"
+    password: "change-me"
+
+vault:
+  enabled: false
+
+  role: "devops-info"
+  secretPath: "secret/data/devops-info-service/config"
+  fileName: "config"
+
 resources:
   requests:
     cpu: "100m"
