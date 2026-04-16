@@ -10,6 +10,8 @@ import platform
 import socket
 from datetime import datetime, timezone
 from flask import Flask, jsonify, request, Response, g
+import threading
+from pathlib import Path
 
 import time
 from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
@@ -23,6 +25,8 @@ app = Flask(__name__)
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", 8000))
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+VISITS_FILE = Path(os.getenv("VISITS_FILE", "/data/visits"))
+_visits_lock = threading.Lock()
 
 SERVICE_NAME = "devops-info-service"
 SERVICE_VERSION = "1.0.0"
@@ -102,6 +106,21 @@ def get_uptime():
     minutes = (seconds % 3600) // 60
     return {"seconds": seconds, "human": f"{hours} hours, {minutes} minutes"}
 
+def _read_visits() -> int:
+    try:
+        return int(VISITS_FILE.read_text().strip() or "0")
+    except FileNotFoundError:
+        return 0
+    except Exception:
+        return 0
+
+
+def _write_visits(value: int) -> None:
+    VISITS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    tmp = VISITS_FILE.with_suffix(".tmp")
+    tmp.write_text(str(value))
+    tmp.replace(VISITS_FILE)
+
 
 @app.before_request
 def log_request():
@@ -157,6 +176,10 @@ def index():
     """Main endpoint - service and system information."""
     devops_info_endpoint_calls.labels(endpoint="/").inc()
 
+    with _visits_lock:
+        visits = _read_visits() + 1
+        _write_visits(visits)
+
     t0 = time.perf_counter()
     uptime = get_uptime()
 
@@ -190,8 +213,13 @@ def index():
         "endpoints": [
             {"path": "/", "method": "GET", "description": "Service information"},
             {"path": "/health", "method": "GET", "description": "Health check"},
+            {"path": "/visits", "method": "GET", "description": "Visits counter"},
         ],
+        "visits": {
+            "count": visits
+        }
     }
+
 
     devops_info_system_collection_seconds.observe(time.perf_counter() - t0)
     return jsonify(response)
@@ -207,6 +235,12 @@ def health():
             "uptime_seconds": get_uptime()["seconds"],
         }
     )
+
+@app.route("/visits", methods=["GET"])
+def visits():
+    with _visits_lock:
+        value = _read_visits()
+    return jsonify({"visits": value})
 
 
 @app.errorhandler(404)
