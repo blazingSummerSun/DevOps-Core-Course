@@ -1,8 +1,8 @@
-replicaCount: 5
+replicaCount: 1
 
 image:
-  repository: sincere99/devops-app
-  tag: "v2"
+  repository: devops-info-service
+  tag: "lab12"
   pullPolicy: IfNotPresent
 
 service:
@@ -62,3 +62,10 @@ hooks:
     sleepSeconds: 5
   postInstall:
     sleepSeconds: 5
+
+environment: dev
+logLevel: info
+
+persistence:
+  size: 100Mi
+  storageClass: ""
