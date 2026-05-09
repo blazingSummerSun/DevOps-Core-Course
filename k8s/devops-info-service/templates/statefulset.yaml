@@ -1,10 +1,11 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Rollout
+apiVersion: apps/v1
+kind: StatefulSet
 metadata:
   name: {{ include "devops-info-service.fullname" . }}
   labels:
     {{- include "devops-info-service.labels" . | nindent 4 }}
 spec:
+  serviceName: {{ include "devops-info-service.fullname" . }}-headless
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
@@ -16,14 +17,20 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.targetPort }}
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
-  strategy:
-    blueGreen:
-      activeService: {{ include "devops-info-service.fullname" . }}
-      previewService: {{ include "devops-info-service.fullname" . }}-preview
-      autoPromotionEnabled: false
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
